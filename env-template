@@ -1,0 +1,5 @@
+# Copy this file and save it as .env
+# Then set the variables
+
+HARDCODED_USER=
+HARDCODED_PASSWORD=
