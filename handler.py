@@ -1,26 +1,26 @@
 import json
+import logging
 import traceback
 
-from meme_police.auth import is_authenticated
-from meme_police.check_meme import check_duplicate_meme
+from meme_police.telegram import handle_bot_command, parse_telegram_webhook_body, send_message
 
+logging.basicConfig(
+    format="%(levelname)s\t%(asctime)s\t%(module)s\t%(message)s",
+    level=logging.INFO
+)
 
 def check_duplicate_meme_handler(event, context):
-    if not is_authenticated(event['headers']):
-        return {
-            'statusCode': 401,
-            'body': json.dumps({'message': 'Unauthorized'})
-        }
     try:
         request_body = json.loads(event['body'])
-        url_to_check = request_body['url']
+        parsed_body = parse_telegram_webhook_body(request_body)
 
-        result = check_duplicate_meme(url_to_check)
+        bot_response = handle_bot_command(parsed_body['command'], parsed_body['arguments'])
+        send_message(bot_response, parsed_body['chat_id'])
 
-        return json.dumps({
+        return {
             'statusCode': 200,
-            'body': json.dumps(result)
-        })
+            # 'body': json.dumps(result)
+        }
     except Exception as er:
         return {
             'statusCode': 400,

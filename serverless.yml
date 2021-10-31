@@ -26,6 +26,7 @@ frameworkVersion: '2'
 plugins:
   - serverless-dotenv-plugin
   - serverless-offline
+  - serverless-python-requirements
 provider:
   name: aws
   region: eu-central-1
@@ -72,3 +73,7 @@ resources: # CloudFormation template syntax from here on.
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
+
+custom:
+  pythonRequirements:
+    dockerizePip: true
