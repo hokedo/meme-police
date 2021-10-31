@@ -12,6 +12,8 @@
 # Happy Coding!
 
 service: meme-police
+variablesResolutionMode: 20210326
+
 useDotenv: true
 # app and org for use with dashboard.serverless.com
 #app: your-app-name
@@ -22,10 +24,8 @@ useDotenv: true
 frameworkVersion: '2'
 
 plugins:
-  - serverless-dynamodb-local
   - serverless-dotenv-plugin
   - serverless-offline
-
 provider:
   name: aws
   region: eu-central-1
@@ -36,30 +36,33 @@ provider:
       statements:
       - Effect: Allow
         Action:
-          - dynamodb:Query
-          - dynamodb:Scan
-          - dynamodb:GetItem
-          - dynamodb:PutItem
-        Resource: "*"
+          - 'dynamodb:Query'
+          - 'dynamodb:Scan'
+          - 'dynamodb:GetItem'
+          - 'dynamodb:PutItem'
+        Resource:
+          - "Fn::GetAtt": [picturesTable, Arn]
+  environment:
+    PICTURES_TABLE_NAME: meme-police-${sls:stage}-${env:PICTURES_TABLE_NAME}
 
 functions:
-  hello:
-    handler: handler.check_duplicate_meme
+  check-meme:
+    handler: handler.check_duplicate_meme_handler
     environment:
       HARDCODED_USER: ${env:HARDCODED_USER}
       HARDCODED_PASSWORD: ${env:HARDCODED_PASSWORD}
     events:
       - http:
-          path: check
+          path: check-meme
           method: post
 
 
 resources: # CloudFormation template syntax from here on.
   Resources:
-    usersTable:
+    picturesTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: ${env.PICTURES_TABLE_NAME}
+        TableName: ${self:provider.environment.PICTURES_TABLE_NAME}
         AttributeDefinitions:
           - AttributeName: url
             AttributeType: S
@@ -69,17 +72,3 @@ resources: # CloudFormation template syntax from here on.
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
-
-custom:
-  dynamodb:
-    stages:
-      - dev
-    start:
-      port: ${env:LOCAL_DYNAMO_DB_PORT}
-      migrate: true
-      seed: true
-    seed:
-      local:
-        sources:
-          - table: ${env.PICTURES_TABLE_NAME}
-            sources: [./data/dynamo_db_seed/picture_table_seed.json]

@@ -2,7 +2,7 @@ from functools import lru_cache
 
 import boto3
 
-from meme_police.env import DYNAMO_DB_PICTURES_TABLE_NAME, IS_OFFLINE, LOCAL_DYNAMO_DB_PORT
+from meme_police.env import DYNAMO_DB_PICTURES_TABLE_NAME
 
 
 @lru_cache(maxsize=1)

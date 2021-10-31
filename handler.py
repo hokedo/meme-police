@@ -2,10 +2,10 @@ import json
 import traceback
 
 from meme_police.auth import is_authenticated
-from meme_police.dynamodb import get_dynamo_db_pictures_table
+from meme_police.check_meme import check_duplicate_meme
 
 
-def check_duplicate_meme(event, context):
+def check_duplicate_meme_handler(event, context):
     if not is_authenticated(event['headers']):
         return {
             'statusCode': 401,
@@ -14,12 +14,12 @@ def check_duplicate_meme(event, context):
     try:
         request_body = json.loads(event['body'])
         url_to_check = request_body['url']
-        pictures_table = get_dynamo_db_pictures_table()
-        entry = pictures_table().get_item(Key={'url': url_to_check})
+
+        result = check_duplicate_meme(url_to_check)
 
         return json.dumps({
             'statusCode': 200,
-            'body': json.dumps(entry)
+            'body': json.dumps(result)
         })
     except Exception as er:
         return {
