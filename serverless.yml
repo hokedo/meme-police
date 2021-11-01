@@ -41,6 +41,7 @@ provider:
           - 'dynamodb:Scan'
           - 'dynamodb:GetItem'
           - 'dynamodb:PutItem'
+          - 'dynamodb:UpdateItem'
         Resource:
           - "Fn::GetAtt": [picturesTable, Arn]
   environment:

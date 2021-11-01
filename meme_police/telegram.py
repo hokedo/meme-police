@@ -6,7 +6,7 @@ import requests
 from meme_police.bot_messages import get_random_busy_message, get_random_original_meme_message, get_random_greeting, \
     get_random_duplicate_meme_message
 from meme_police.env import TELGERAM_BOT_API_ENDPOINT
-from meme_police.meme import check_meme_by_url, insert_meme
+from meme_police.meme import check_meme_by_url, upsert_picture_meme
 
 logger = logging.getLogger(__name__)
 
@@ -46,17 +46,21 @@ def parse_telegram_webhook_body(body):
     }
 
 
-def handle_bot_command(command, arguments):
+def handle_bot_command(parsed_message):
+    command = parsed_message['command']
+    arguments = parsed_message['arguments']
+    chat_id = parsed_message['chat_id']
+
     if command == '/check_meme':
         meme_url = arguments[0]
-        duplicate_reason = check_meme_by_url(meme_url)
+        duplicate_reason = check_meme_by_url(meme_url, chat_id)
         if duplicate_reason:
             if duplicate_reason.get('url'):
                 return get_random_duplicate_meme_message(reason='url')
             return get_random_duplicate_meme_message()
 
         # Meme hasn't been posted before
-        insert_meme(meme_url)
+        upsert_picture_meme(meme_url, chat_id)
         return get_random_original_meme_message()
 
     if command == '/start':
