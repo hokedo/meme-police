@@ -12,10 +12,11 @@ from meme_police.env import TELGERAM_BOT_API_ENDPOINT
 logger = logging.getLogger(__name__)
 
 
-def send_message(text, chat_id):
+def send_message(text, chat_id, message_id):
     message = {
         'chat_id': chat_id,
         'text': text,
+        'reply_to_message_id': message_id,
         'parse_mode': 'Markdown'
     }
     urlencoded_message = urlencode(message)
@@ -32,14 +33,16 @@ def send_message(text, chat_id):
 def parse_telegram_webhook_body(body):
     message = body.get('message') or body.get('edited_message')
 
+    message_id = message['id']
     chat_id = message['chat']['id']
     command_arguments = message['text'].split()
     command, *arguments = command_arguments
 
     return {
         'chat_id': chat_id,
+        'message_id': message_id,
         'command': command,
-        'arguments': arguments
+        'arguments': arguments,
     }
 
 
@@ -49,8 +52,8 @@ def handle_bot_command(command, arguments):
         duplicate_reason = check_meme_by_url(meme_url)
         if duplicate_reason:
             if duplicate_reason.get('url'):
-                return get_random_duplicate_meme_message(reason='url', meme_url=meme_url)
-            return get_random_duplicate_meme_message(meme_url=meme_url)
+                return get_random_duplicate_meme_message(reason='url')
+            return get_random_duplicate_meme_message()
 
         # Meme hasn't been posted before
         insert_meme(meme_url)

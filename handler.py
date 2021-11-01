@@ -9,13 +9,14 @@ logging.basicConfig(
     level=logging.INFO
 )
 
+
 def check_duplicate_meme_handler(event, context):
     try:
         request_body = json.loads(event['body'])
         parsed_body = parse_telegram_webhook_body(request_body)
 
         bot_response = handle_bot_command(parsed_body['command'], parsed_body['arguments'])
-        send_message(bot_response, parsed_body['chat_id'])
+        send_message(bot_response, parsed_body['chat_id'], parsed_body['message_id'])
 
         return {
             'statusCode': 200,
