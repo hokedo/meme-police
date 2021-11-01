@@ -4,7 +4,9 @@ from urllib.parse import urljoin, urlencode
 
 import requests
 
-from meme_police.check_meme import check_duplicate_meme
+from meme_police.bot_messages import get_random_busy_message, get_random_original_meme_message, get_random_greeting, \
+    get_random_duplicate_meme_message
+from meme_police.meme import check_meme_by_url, insert_meme
 from meme_police.env import TELGERAM_BOT_API_ENDPOINT
 
 logger = logging.getLogger(__name__)
@@ -43,17 +45,18 @@ def parse_telegram_webhook_body(body):
 
 def handle_bot_command(command, arguments):
     if command == '/check_meme':
-        duplicate_meme = check_duplicate_meme(arguments[0])
-        if duplicate_meme:
-            return f"Meme was already posted!\n{arguments[0]}"
-        return "Looks like an original meme"
+        meme_url = arguments[0]
+        duplicate_reason = check_meme_by_url(meme_url)
+        if duplicate_reason:
+            if duplicate_reason.get('url'):
+                return get_random_duplicate_meme_message(reason='url', meme_url=meme_url)
+            return get_random_duplicate_meme_message(meme_url=meme_url)
+
+        # Meme hasn't been posted before
+        insert_meme(meme_url)
+        return get_random_original_meme_message()
 
     if command == '/start':
-        return "Hello there young memer"
+        return get_random_greeting()
 
-    return random.choice([
-        "Not right now",
-        "Step aside, I've got other things to do",
-        "No ticket today",
-        "\**confused oinking*\*"
-    ])
+    return get_random_busy_message()
