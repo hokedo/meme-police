@@ -1,13 +1,12 @@
 import logging
-import random
 from urllib.parse import urljoin, urlencode
 
 import requests
 
 from meme_police.bot_messages import get_random_busy_message, get_random_original_meme_message, get_random_greeting, \
     get_random_duplicate_meme_message
-from meme_police.meme import check_meme_by_url, insert_meme
 from meme_police.env import TELGERAM_BOT_API_ENDPOINT
+from meme_police.meme import check_meme_by_url, insert_meme
 
 logger = logging.getLogger(__name__)
 
@@ -31,16 +30,17 @@ def send_message(text, chat_id, message_id):
 
 
 def parse_telegram_webhook_body(body):
-    message = body.get('message') or body.get('edited_message')
+    message = body.get('message') or body.get('edited_message') or {}
 
-    message_id = message['id']
-    chat_id = message['chat']['id']
-    command_arguments = message['text'].split()
-    command, *arguments = command_arguments
+    message_id = message.get('message_id')
+    chat_id = message.get('chat', {}).get('id')
+    text = message.get('text')
+    command, *arguments = text.split() if text else [None, None]
 
     return {
         'chat_id': chat_id,
         'message_id': message_id,
+        'text': text,
         'command': command,
         'arguments': arguments,
     }

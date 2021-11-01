@@ -15,8 +15,9 @@ def check_duplicate_meme_handler(event, context):
         request_body = json.loads(event['body'])
         parsed_body = parse_telegram_webhook_body(request_body)
 
-        bot_response = handle_bot_command(parsed_body['command'], parsed_body['arguments'])
-        send_message(bot_response, parsed_body['chat_id'], parsed_body['message_id'])
+        if all([parsed_body['text'], parsed_body['chat_id'], parsed_body['message_id']]):
+            bot_response = handle_bot_command(parsed_body['command'], parsed_body['arguments'])
+            send_message(bot_response, parsed_body['chat_id'], parsed_body['message_id'])
 
         return {
             'statusCode': 200,
