@@ -2,7 +2,7 @@ import json
 import logging
 import traceback
 
-from meme_police.telegram import handle_bot_command, parse_telegram_webhook_body, send_message
+from meme_police.telegram import handle_incoming_message, parse_telegram_webhook_body, send_message
 
 logging.basicConfig(
     format="%(levelname)s\t%(asctime)s\t%(module)s\t%(message)s",
@@ -16,8 +16,7 @@ def check_duplicate_meme_handler(event, context):
         parsed_body = parse_telegram_webhook_body(request_body)
 
         if all([parsed_body['text'], parsed_body['chat_id'], parsed_body['message_id']]):
-            bot_response = handle_bot_command(parsed_body)
-            send_message(bot_response, parsed_body['chat_id'], parsed_body['message_id'])
+            handle_incoming_message(parsed_body)
 
         return {
             'statusCode': 200,
