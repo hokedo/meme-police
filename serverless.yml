@@ -78,3 +78,16 @@ resources: # CloudFormation template syntax from here on.
 custom:
   pythonRequirements:
     dockerizePip: true
+    zip: true
+    slim: true
+    noDeploy:
+      - boto3
+      - botocore
+      - docutils
+      - jmespath
+      - pip
+      - python-dateutil
+      - s3transfer
+      - setuptools
+      - six
+      - tensorboard

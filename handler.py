@@ -1,3 +1,10 @@
+try:
+    # requirements are zipped and slimmed when uploaded on lambda
+    # this import will only work on the lambda instance
+    import unzip_requirements
+except ImportError:
+    pass
+
 import json
 import logging
 import traceback
