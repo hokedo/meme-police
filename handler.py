@@ -10,6 +10,7 @@ import logging
 import traceback
 
 from meme_police.telegram import handle_incoming_message, parse_telegram_webhook_body, send_message
+import tensorflow
 
 logging.basicConfig(
     format="%(levelname)s\t%(asctime)s\t%(module)s\t%(message)s",

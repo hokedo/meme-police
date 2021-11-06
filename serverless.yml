@@ -50,6 +50,7 @@ provider:
 functions:
   check-meme:
     handler: handler.check_duplicate_meme_handler
+    timeout: 25
     environment:
       HARDCODED_USER: ${env:HARDCODED_USER}
       HARDCODED_PASSWORD: ${env:HARDCODED_PASSWORD}
@@ -79,4 +80,15 @@ custom:
   pythonRequirements:
     dockerizePip: true
     zip: true
-#    slim: true
+    slim: true
+    noDeploy:
+      - boto3
+      - botocore
+      - docutils
+      - jmespath
+      - pip
+      - python-dateutil
+      - s3transfer
+      - setuptools
+      - six
+      - tensorboard
