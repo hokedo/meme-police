@@ -1,8 +1,6 @@
-from io import BytesIO
 from urllib.parse import urlparse, urljoin
 
 import requests
-from PIL import Image
 
 CDN_IMAGES_URL_9GAG = 'https://img-9gag-fun.9cache.com/photo/'
 CDN_IMAGES_URL_HUGELOL = 'https://hugelolcdn.com/i/'
@@ -14,7 +12,7 @@ def image_downloader_9gag(url):
     response = requests.get(image_url)
 
     if response.ok:
-        return Image.open(BytesIO(response.content))
+        return response.content
 
 
 def image_downloader_hugelol(url):
@@ -23,7 +21,7 @@ def image_downloader_hugelol(url):
     response = requests.get(image_url)
 
     if response.ok:
-        return Image.open(BytesIO(response.content))
+        return response.content
 
 
 DOMAIN_IMAGE_DOWNLOADERS_MAP = {

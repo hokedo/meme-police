@@ -3,7 +3,7 @@ from urllib.parse import urljoin, urlencode, urlparse
 
 import requests
 
-from meme_police.bot_messages import get_random_original_meme_message, get_random_duplicate_meme_message
+from meme_police.bot_messages import get_random_duplicate_meme_message
 from meme_police.downloaders import DOMAIN_IMAGE_DOWNLOADERS_MAP
 from meme_police.env import TELGERAM_BOT_API_ENDPOINT
 from meme_police.meme import meme_is_duplicate_by_url, upsert_picture_meme
@@ -46,10 +46,16 @@ def parse_telegram_webhook_body(body):
             url = text[url_offset:url_offset + url_length]
 
             parsed_url = urlparse(url)
+
+            # Remove subdomain
             domain = '.'.join(parsed_url.netloc.split('.')[-2:])
 
             if domain in DOMAIN_IMAGE_DOWNLOADERS_MAP:
-                meme_urls.append(url)
+                meme_urls.append({
+                    'raw': url,
+                    'parsed': parsed_url,
+                    'domain': domain
+                })
 
     return {
         'chat_id': chat_id,
@@ -65,19 +71,20 @@ def parse_telegram_webhook_body(body):
 def handle_incoming_message(parsed_message):
     chat_id = parsed_message['chat_id']
 
-    for meme_url in parsed_message['meme_urls']:
-        duplicate_reason = meme_is_duplicate_by_url(meme_url, chat_id)
+    for meme_url_dict in parsed_message['meme_urls']:
+        meme_url = meme_url_dict['raw']
+        duplicate_reason = meme_is_duplicate_by_url(meme_url_dict, chat_id)
 
         if duplicate_reason:
             send_message(
-                get_random_duplicate_meme_message(meme_url=meme_url, reason=duplicate_reason),
+                get_random_duplicate_meme_message(meme_url_dict=meme_url, reason=duplicate_reason),
                 parsed_message['chat_id'],
                 parsed_message['message_id']
             )
 
         else:
             # Meme hasn't been posted before
-            upsert_picture_meme(meme_url, chat_id)
+            upsert_picture_meme(meme_url_dict, chat_id)
 
     if not parsed_message['meme_urls']:
         print("No meme urls :(")

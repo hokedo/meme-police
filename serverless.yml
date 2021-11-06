@@ -35,15 +35,15 @@ provider:
   iam:
     role:
       statements:
-      - Effect: Allow
-        Action:
-          - 'dynamodb:Query'
-          - 'dynamodb:Scan'
-          - 'dynamodb:GetItem'
-          - 'dynamodb:PutItem'
-          - 'dynamodb:UpdateItem'
-        Resource:
-          - "Fn::GetAtt": [picturesTable, Arn]
+        - Effect: Allow
+          Action:
+            - 'dynamodb:Query'
+            - 'dynamodb:Scan'
+            - 'dynamodb:GetItem'
+            - 'dynamodb:PutItem'
+            - 'dynamodb:UpdateItem'
+          Resource:
+            - "Fn::GetAtt": [picturesTable, Arn]
   environment:
     PICTURES_TABLE_NAME: meme-police-${sls:stage}-${env:PICTURES_TABLE_NAME}
 
@@ -66,10 +66,10 @@ resources: # CloudFormation template syntax from here on.
       Properties:
         TableName: ${self:provider.environment.PICTURES_TABLE_NAME}
         AttributeDefinitions:
-          - AttributeName: url
+          - AttributeName: stripped_url
             AttributeType: S
         KeySchema:
-          - AttributeName: url
+          - AttributeName: stripped_url
             KeyType: HASH
         ProvisionedThroughput:
           ReadCapacityUnits: 1
@@ -79,15 +79,4 @@ custom:
   pythonRequirements:
     dockerizePip: true
     zip: true
-    slim: true
-    noDeploy:
-      - boto3
-      - botocore
-      - docutils
-      - jmespath
-      - pip
-      - python-dateutil
-      - s3transfer
-      - setuptools
-      - six
-      - tensorboard
+#    slim: true
