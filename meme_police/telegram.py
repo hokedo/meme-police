@@ -6,7 +6,7 @@ import requests
 from meme_police.bot_messages import get_random_duplicate_meme_message
 from meme_police.downloaders import DOMAIN_IMAGE_DOWNLOADERS_MAP, download_image
 from meme_police.env import TELGERAM_BOT_API_ENDPOINT
-from meme_police.meme import upsert_picture_meme, meme_is_duplicate_by_image
+from meme_police.meme import upsert_picture_meme, meme_is_duplicate_by_image, meme_is_duplicate_by_url
 from meme_police.utils.image import calculate_image_hash
 
 logger = logging.getLogger(__name__)
@@ -81,9 +81,9 @@ def handle_incoming_message(parsed_message):
         duplicate_reason = None
         image_hash = None
 
-        # if not duplicate_reason:
-        #     if meme_is_duplicate_by_url(meme_url_dict, chat_id):
-        #         duplicate_reason = 'url'
+        if not duplicate_reason:
+            if meme_is_duplicate_by_url(meme_url_dict, chat_id):
+                duplicate_reason = 'url'
 
         if not duplicate_reason:
             image = download_image(meme_url_dict)

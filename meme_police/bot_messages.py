@@ -23,12 +23,12 @@ def get_random_original_meme_message():
 
 
 def get_random_duplicate_meme_message(meme_url, reason=None):
-    if reason == 'duplicate_url':
+    if reason == 'url':
         return random.choice([
             f"Same URL was already posted!\n{meme_url}"
         ])
 
-    if reason == 'duplicate_image':
+    if reason == 'image':
         return random.choice([
             f"Same Image was already posted!\n{meme_url if meme_url else ''}"
         ])
