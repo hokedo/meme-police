@@ -58,6 +58,8 @@ functions:
       - http:
           path: check-meme
           method: post
+    layers:
+      - arn:aws:lambda:eu-central-1:770693421928:layer:Klayers-python38-Pillow:14
 
 
 resources: # CloudFormation template syntax from here on.
@@ -81,14 +83,13 @@ custom:
     dockerizePip: true
     zip: true
     slim: true
-    noDeploy:
-      - boto3
-      - botocore
-      - docutils
-      - jmespath
-      - pip
-      - python-dateutil
-      - s3transfer
-      - setuptools
-      - six
-      - tensorboard
+    strip: false # avoid some ELF alignment issues
+    slimPatternsAppendDefaults: false
+    slimPatterns:
+      # Won't work with noDeploy since
+      # dependencies will go back
+      - PIL/**
+      - Pillow*/**
+      # Exclude **/*.dist-info* may cause trouble
+      - '**/*.py[c|o]'
+      - '**/__pycache__*'

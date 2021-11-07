@@ -9,13 +9,11 @@ import json
 import logging
 import traceback
 
-from meme_police.telegram import handle_incoming_message, parse_telegram_webhook_body, send_message
-import tensorflow
+from meme_police.telegram import handle_incoming_message, parse_telegram_webhook_body
 
-logging.basicConfig(
-    format="%(levelname)s\t%(asctime)s\t%(module)s\t%(message)s",
-    level=logging.INFO
-)
+logging.basicConfig(format="%(levelname)s\t%(asctime)s\t%(module)s\t%(message)s")
+
+logging.getLogger().setLevel(logging.INFO)
 
 
 def check_duplicate_meme_handler(event, context):

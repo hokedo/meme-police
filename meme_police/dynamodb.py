@@ -9,6 +9,10 @@ from meme_police.env import DYNAMO_DB_PICTURES_TABLE_NAME
 def get_dynamodb_resource():
     return boto3.resource('dynamodb')
 
+@lru_cache(maxsize=1)
+def get_dynamodb_client():
+    return boto3.client('dynamodb')
+
 
 @lru_cache(maxsize=1)
 def get_dynamo_db_pictures_table():
