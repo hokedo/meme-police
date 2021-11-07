@@ -1,4 +1,1 @@
-boto3==1.19.7
-botocore==1.22.7
-requests==2.26.0
-ImageHash==4.2.1
+-r ./requirements/base.txt

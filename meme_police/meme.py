@@ -3,6 +3,7 @@ from boto3.dynamodb.conditions import Key, Attr
 from imagehash import ImageHash
 
 from meme_police.dynamodb import get_dynamo_db_pictures_table, get_dynamodb_client
+from meme_police.env import IMAGE_SIMILARITY_THRESHOLD
 from meme_police.utils.image import calculate_image_hash_similarity
 
 
@@ -55,7 +56,7 @@ def meme_is_duplicate_by_image(image_hash, chat_id):
             other_image_hash = ImageHash(other_image_hash)
             similarity = calculate_image_hash_similarity(image_hash, other_image_hash)
 
-            if similarity >= 0.5:
+            if similarity > IMAGE_SIMILARITY_THRESHOLD:
                 return True
 
     return False

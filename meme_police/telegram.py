@@ -28,6 +28,19 @@ def send_message(text, chat_id, message_id):
     logger.info(f'Got response status:\t{response.status_code}\t{response.content}')
 
 
+def parse_meme_url(url):
+    parsed_url = urlparse(url)
+
+    # Remove subdomain
+    domain = '.'.join(parsed_url.netloc.split('.')[-2:])
+
+    return {
+        'raw': url,
+        'parsed': parsed_url,
+        'domain': domain
+    }
+
+
 def parse_telegram_webhook_body(body):
     message = body.get('message') or body.get('edited_message') or {}
 
@@ -44,17 +57,10 @@ def parse_telegram_webhook_body(body):
             url_length = entity['length']
             url = text[url_offset:url_offset + url_length]
 
-            parsed_url = urlparse(url)
+            parsed_url = parse_meme_url(url)
 
-            # Remove subdomain
-            domain = '.'.join(parsed_url.netloc.split('.')[-2:])
-
-            if domain in DOMAIN_IMAGE_DOWNLOADERS_MAP:
-                meme_urls.append({
-                    'raw': url,
-                    'parsed': parsed_url,
-                    'domain': domain
-                })
+            if parsed_url['domain'] in DOMAIN_IMAGE_DOWNLOADERS_MAP:
+                meme_urls.append(parsed_url)
 
     return {
         'chat_id': chat_id,
