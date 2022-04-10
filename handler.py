@@ -23,7 +23,7 @@ def check_duplicate_meme_handler(event, context):
     }
 
     try:
-        logger.info(f"Received event:\t{event}")
+        logger.info(f"Received event:\t{json.dumps(event)}")
         request_body = json.loads(event['body'])
         parsed_body = parse_telegram_webhook_body(request_body)
 
