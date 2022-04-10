@@ -27,6 +27,7 @@ plugins:
   - serverless-dotenv-plugin
   - serverless-offline
   - serverless-python-requirements
+
 provider:
   name: aws
   region: eu-central-1
@@ -93,3 +94,6 @@ custom:
       # Exclude **/*.dist-info* may cause trouble
       - '**/*.py[c|o]'
       - '**/__pycache__*'
+  dotenv:
+    exclude:
+      - PICTURES_TABLE_NAME
