@@ -46,9 +46,10 @@ def find_meme_by_image(image_hash, chat_id):
             similarity = calculate_image_hash_similarity(image_hash, other_image_hash)
 
             if similarity > IMAGE_SIMILARITY_THRESHOLD:
-                return item
+                item['chat_id'] = item['chat_id']['S']
+                item['original_message_id'] = item['original_message_id']['S']
 
-    return False
+                return item
 
 
 def insert_picture_meme(url_dict, image_hash, chat_id, original_message_id):
