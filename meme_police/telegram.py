@@ -62,6 +62,13 @@ def parse_telegram_webhook_body(body):
             if parsed_url['domain'] in DOMAIN_IMAGE_DOWNLOADERS_MAP:
                 meme_urls.append(parsed_url)
 
+        if entity['type'] == 'text_link':
+            url = entity['url']
+            parsed_url = parse_meme_url(url)
+
+            if parsed_url['domain'] in DOMAIN_IMAGE_DOWNLOADERS_MAP:
+                meme_urls.append(parsed_url)
+
     return {
         'chat_id': chat_id,
         'message_id': message_id,
