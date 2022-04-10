@@ -4,7 +4,7 @@ from urllib.parse import urljoin, urlencode, urlparse
 import requests
 
 from meme_police.bot_messages import get_random_duplicate_meme_message
-from meme_police.downloaders import DOMAIN_IMAGE_DOWNLOADERS_MAP, download_image
+from meme_police.downloaders import DOMAIN_IMAGE_DOWNLOADERS_MAP, download_image, image_downloader_telegram
 from meme_police.env import TELGERAM_BOT_API_ENDPOINT
 from meme_police.meme import insert_picture_meme, find_meme_by_image, find_meme_by_url
 from meme_police.utils.image import calculate_image_hash
@@ -69,7 +69,12 @@ def parse_telegram_webhook_body(body):
             if parsed_url['domain'] in DOMAIN_IMAGE_DOWNLOADERS_MAP:
                 meme_urls.append(parsed_url)
 
+    photo = message.get('photo', [])
+    if photo:
+        photo = sorted(photo, key=lambda x: x['file_size'], reverse=True)[0]
+
     message_from = message['from']
+
     return {
         'chat_id': chat_id,
         'message_id': message_id,
@@ -78,12 +83,13 @@ def parse_telegram_webhook_body(body):
         'arguments': arguments,
         'entities': entities,
         'meme_urls': meme_urls,
+        'photo': photo,
         'from': {
             'id': message_from['id'],
             'first_name': message_from.get('first_name') or '',
             'last_name': message_from.get('last_name') or '',
             'is_bot': message_from['is_bot'],
-        }
+        },
     }
 
 
@@ -117,16 +123,45 @@ def handle_incoming_message(parsed_message):
 
             insert_picture_meme(meme_url_dict, image_hash, chat_id, message_id)
         else:
-            send_message(
-                get_random_duplicate_meme_message(meme_url, duplicate_reason, parsed_message),
-                chat_id,
-                message_id
-            )
-            send_message(
-                "Mesajul original",
-                chat_id,
-                original_meme['original_message_id']
+            send_reply_for_duplicate_meme(
+                chat_id, duplicate_reason, meme_url, message_id, original_meme, parsed_message
             )
 
     if not parsed_message['meme_urls']:
         logger.info("No meme urls :(")
+
+    if parsed_message['photo']:
+        meme_url = ''
+        file_id = parsed_message['photo']['file_id']
+
+        image = image_downloader_telegram(file_id)
+        if image:
+            image_hash = calculate_image_hash(image)
+            original_meme = find_meme_by_image(image_hash, chat_id)
+            if original_meme:
+                duplicate_reason = 'image'
+
+                send_reply_for_duplicate_meme(
+                    chat_id, duplicate_reason, meme_url, message_id, original_meme, parsed_message
+                )
+            else:
+                meme_url_dict = {
+                    'domain': 'telegram',
+                    'parsed': urlparse(f"telegram/{file_id}")
+                }
+                insert_picture_meme(meme_url_dict, image_hash, chat_id, message_id)
+        else:
+            logger.info("Failed to download image from telegram")
+
+
+def send_reply_for_duplicate_meme(chat_id, duplicate_reason, meme_url, message_id, original_meme, parsed_message):
+    send_message(
+        get_random_duplicate_meme_message(meme_url, duplicate_reason, parsed_message),
+        chat_id,
+        message_id
+    )
+    send_message(
+        "Mesajul original",
+        chat_id,
+        original_meme['original_message_id']
+    )

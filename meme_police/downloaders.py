@@ -4,6 +4,8 @@ from urllib.parse import urljoin
 import requests
 from PIL import Image
 
+from meme_police.env import TELEGRAM_BOT_TOKEN
+
 CDN_IMAGES_URL_9GAG = 'https://img-9gag-fun.9cache.com/photo/'
 CDN_IMAGES_URL_HUGELOL = 'https://hugelolcdn.com/i/'
 
@@ -35,6 +37,20 @@ def image_downloader_hugelol(url_dict):
     response = requests.get(image_url)
     if response.ok:
         return Image.open(BytesIO(response.content))
+
+
+def image_downloader_telegram(file_id):
+    get_file_path_url = f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/getFile?file_id={file_id}'
+    response = requests.get(get_file_path_url)
+
+    if response.ok:
+        file_path = response.json()['result']['file_path']
+        get_file_url = f'https://api.telegram.org/file/bot{TELEGRAM_BOT_TOKEN}/{file_path}'
+
+        response = requests.get(get_file_url)
+
+        if response.ok:
+            return Image.open(BytesIO(response.content))
 
 
 DOMAIN_IMAGE_DOWNLOADERS_MAP = {
