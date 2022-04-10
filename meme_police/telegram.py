@@ -80,8 +80,8 @@ def parse_telegram_webhook_body(body):
         'meme_urls': meme_urls,
         'from': {
             'id': message_from['id'],
-            'first_name': message_from['first_name'],
-            'last_name': message_from['last_name'],
+            'first_name': message_from.get('first_name') or '',
+            'last_name': message_from.get('last_name') or '',
             'is_bot': message_from['is_bot'],
         }
     }
