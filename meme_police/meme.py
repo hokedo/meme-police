@@ -46,7 +46,7 @@ def find_meme_by_image(image_hash, chat_id):
             similarity = calculate_image_hash_similarity(image_hash, other_image_hash)
 
             if similarity > IMAGE_SIMILARITY_THRESHOLD:
-                return True
+                return item
 
     return False
 
