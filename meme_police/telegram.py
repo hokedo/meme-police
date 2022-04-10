@@ -12,11 +12,11 @@ from meme_police.utils.image import calculate_image_hash
 logger = logging.getLogger(__name__)
 
 
-def send_message(text, chat_id, message_id):
+def send_message(text, chat_id, reply_to_message_id):
     message = {
         'chat_id': chat_id,
         'text': text,
-        'reply_to_message_id': message_id,
+        'reply_to_message_id': reply_to_message_id,
         'parse_mode': 'Markdown'
     }
     urlencoded_message = urlencode(message)
@@ -69,6 +69,7 @@ def parse_telegram_webhook_body(body):
             if parsed_url['domain'] in DOMAIN_IMAGE_DOWNLOADERS_MAP:
                 meme_urls.append(parsed_url)
 
+    message_from = message['from']
     return {
         'chat_id': chat_id,
         'message_id': message_id,
@@ -76,7 +77,13 @@ def parse_telegram_webhook_body(body):
         'command': command,
         'arguments': arguments,
         'entities': entities,
-        'meme_urls': meme_urls
+        'meme_urls': meme_urls,
+        'from': {
+            'id': message_from['id'],
+            'first_name': message_from['first_name'],
+            'last_name': message_from['last_name'],
+            'is_bot': message_from['is_bot'],
+        }
     }
 
 
@@ -111,12 +118,12 @@ def handle_incoming_message(parsed_message):
             insert_picture_meme(meme_url_dict, image_hash, chat_id, message_id)
         else:
             send_message(
-                get_random_duplicate_meme_message(meme_url, duplicate_reason),
+                get_random_duplicate_meme_message(meme_url, duplicate_reason, parsed_message),
                 chat_id,
                 message_id
             )
             send_message(
-                "Original Message",
+                "Mesajul original",
                 chat_id,
                 original_meme['original_message_id']
             )
