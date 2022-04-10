@@ -6,7 +6,7 @@ import requests
 from meme_police.bot_messages import get_random_duplicate_meme_message
 from meme_police.downloaders import DOMAIN_IMAGE_DOWNLOADERS_MAP, download_image
 from meme_police.env import TELGERAM_BOT_API_ENDPOINT
-from meme_police.meme import upsert_picture_meme, meme_is_duplicate_by_image, meme_is_duplicate_by_url
+from meme_police.meme import insert_picture_meme, find_meme_by_image, find_meme_by_url
 from meme_police.utils.image import calculate_image_hash
 
 logger = logging.getLogger(__name__)
@@ -82,21 +82,23 @@ def parse_telegram_webhook_body(body):
 
 def handle_incoming_message(parsed_message):
     chat_id = parsed_message['chat_id']
+    message_id = parsed_message['message_id']
 
     for meme_url_dict in parsed_message['meme_urls']:
         meme_url = meme_url_dict['raw']
         duplicate_reason = None
         image_hash = None
 
-        if not duplicate_reason:
-            if meme_is_duplicate_by_url(meme_url_dict, chat_id):
-                duplicate_reason = 'url'
+        original_meme = find_meme_by_url(meme_url_dict, chat_id)
+        if original_meme:
+            duplicate_reason = 'url'
 
-        if not duplicate_reason:
+        if not original_meme:
             image = download_image(meme_url_dict)
             image_hash = calculate_image_hash(image)
 
-            if meme_is_duplicate_by_image(image_hash, chat_id):
+            original_meme = find_meme_by_image(image_hash, chat_id)
+            if original_meme:
                 duplicate_reason = 'image'
 
         if not duplicate_reason:
@@ -106,13 +108,18 @@ def handle_incoming_message(parsed_message):
                 image = download_image(meme_url_dict)
                 image_hash = calculate_image_hash(image)
 
-            upsert_picture_meme(meme_url_dict, image_hash, chat_id)
+            insert_picture_meme(meme_url_dict, image_hash, chat_id, message_id)
         else:
             send_message(
                 get_random_duplicate_meme_message(meme_url, duplicate_reason),
-                parsed_message['chat_id'],
-                parsed_message['message_id']
+                chat_id,
+                message_id
+            )
+            send_message(
+                "Original Message",
+                chat_id,
+                original_meme['original_message_id']
             )
 
     if not parsed_message['meme_urls']:
-        print("No meme urls :(")
+        logger.info("No meme urls :(")
