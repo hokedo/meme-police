@@ -48,14 +48,20 @@ def find_meme_by_image(image_hash, chat_id):
     page_iterator = paginator.paginate(**operation_parameters)
     for page in page_iterator:
         for item in page['Items']:
-            other_image_hash = [item['BOOL'] for item in item['image_hash']['L']]
-            other_image_hash = np.array(other_image_hash).reshape(image_hash.hash.shape)
-            other_image_hash = ImageHash(other_image_hash)
-            similarity = calculate_image_hash_similarity(image_hash, other_image_hash)
 
-            if similarity > IMAGE_SIMILARITY_THRESHOLD:
-                item['chat_id'] = item['chat_id']['S']
-                item['original_message_id'] = item['original_message_id']['S']
+            # If image has is empty, it has no image. Just URL was stored
+            if item['image_hash']['L']:
+                other_image_hash = [item['BOOL'] for item in item['image_hash']['L']]
+                other_image_hash = np.array(other_image_hash).reshape(image_hash.hash.shape)
+                other_image_hash = ImageHash(other_image_hash)
+                similarity = calculate_image_hash_similarity(image_hash, other_image_hash)
+
+                if similarity > IMAGE_SIMILARITY_THRESHOLD:
+                    logger.info("Similar image found!")
+                    item['chat_id'] = item['chat_id']['S']
+                    item['original_message_id'] = item['original_message_id']['S']
+
+                    return item
 
     logger.info("No similar image found!")
 
@@ -70,7 +76,13 @@ def insert_picture_meme(url_dict, image_hash, chat_id, original_message_id):
             'stripped_url': stripped_url,
             'chat_id': str(chat_id),
             'original_message_id': str(original_message_id),
-            'image_hash': [bool(item) for item in image_hash.hash.flatten()]
+            # If image hash not present, probably the meme is a video
+            'image_hash': [
+                bool(item)
+                for item in image_hash.hash.flatten()
+            ]
+            if image_hash
+            else []
         }
     )
 

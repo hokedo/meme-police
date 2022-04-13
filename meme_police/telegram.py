@@ -108,18 +108,22 @@ def handle_incoming_message(parsed_message):
 
         if not original_meme:
             image = download_image(meme_url_dict)
-            image_hash = calculate_image_hash(image)
 
-            original_meme = find_meme_by_image(image_hash, chat_id)
-            if original_meme:
-                duplicate_reason = 'image'
+            if image:
+                image_hash = calculate_image_hash(image)
+
+                original_meme = find_meme_by_image(image_hash, chat_id)
+                if original_meme:
+                    duplicate_reason = 'image'
+            else:
+                logger.info(f"Failed to download image from '{meme_url}'")
 
         if not duplicate_reason:
             # Meme hasn't been posted before
 
-            if not image_hash:
-                image = download_image(meme_url_dict)
-                image_hash = calculate_image_hash(image)
+            # if not image_hash:
+            #     image = download_image(meme_url_dict)
+            #     image_hash = calculate_image_hash(image)
 
             insert_picture_meme(meme_url_dict, image_hash, chat_id, message_id)
         else:
