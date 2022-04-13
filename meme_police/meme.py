@@ -1,3 +1,5 @@
+import logging
+
 import numpy as np
 from boto3.dynamodb.conditions import Key, Attr
 from imagehash import ImageHash
@@ -5,6 +7,8 @@ from imagehash import ImageHash
 from meme_police.dynamodb import get_dynamo_db_pictures_table, get_dynamodb_client
 from meme_police.env import IMAGE_SIMILARITY_THRESHOLD
 from meme_police.utils.image import calculate_image_hash_similarity
+
+logger = logging.getLogger(__name__)
 
 
 def find_meme_by_url(url_dict, chat_id):
@@ -17,10 +21,14 @@ def find_meme_by_url(url_dict, chat_id):
     )
 
     if response['Count'] > 0:
+        logger.info("Similar meme found by url!")
         return response['Items'][0]
+
+    logger.info("No similar meme found by url!")
 
 
 def find_meme_by_image(image_hash, chat_id):
+    logger.info(f"Looking for similar images in chat:\t{chat_id}")
     dynamo_db_client = get_dynamodb_client()
     pictures_table = get_dynamo_db_pictures_table()
 
@@ -49,11 +57,12 @@ def find_meme_by_image(image_hash, chat_id):
                 item['chat_id'] = item['chat_id']['S']
                 item['original_message_id'] = item['original_message_id']['S']
 
-                return item
+    logger.info("No similar image found!")
 
 
 def insert_picture_meme(url_dict, image_hash, chat_id, original_message_id):
     stripped_url = build_stripped_url(url_dict)
+    logger.info(f"Inserting picture meme:\t{stripped_url}")
 
     pictures_table = get_dynamo_db_pictures_table()
     return pictures_table.put_item(
