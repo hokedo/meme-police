@@ -23,7 +23,7 @@ def download_image(url_dict):
 def image_downloader_9gag(url_dict):
     post_id = url_dict['parsed'].path.split('/')[-1]
     image_url = urljoin(CDN_IMAGES_URL_9GAG, f'{post_id}_700b.jpg')
-    response = requests.get(image_url)
+    response = requests.get(image_url, timeout=10)
 
     if response.ok:
         return Image.open(BytesIO(response.content))
@@ -32,13 +32,13 @@ def image_downloader_9gag(url_dict):
 def image_downloader_hugelol(url_dict):
     post_id = url_dict['parsed'].path.split('/')[-1]
     image_url = urljoin(CDN_IMAGES_URL_HUGELOL, f'{post_id}.jpg')
-    response = requests.get(image_url)
+    response = requests.get(image_url, timeout=10)
 
     if response.ok:
         return Image.open(BytesIO(response.content))
 
     image_url = urljoin(CDN_IMAGES_URL_HUGELOL, f'{post_id}.png')
-    response = requests.get(image_url)
+    response = requests.get(image_url, timeout=10)
     if response.ok:
         return Image.open(BytesIO(response.content))
 
@@ -46,13 +46,13 @@ def image_downloader_hugelol(url_dict):
 def image_downloader_telegram(file_id):
     logger.info(f"Downloading file from telegram:\t{file_id}")
     get_file_path_url = f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/getFile?file_id={file_id}'
-    response = requests.get(get_file_path_url)
+    response = requests.get(get_file_path_url, timeout=10)
 
     if response.ok:
         file_path = response.json()['result']['file_path']
         get_file_url = f'https://api.telegram.org/file/bot{TELEGRAM_BOT_TOKEN}/{file_path}'
 
-        response = requests.get(get_file_url)
+        response = requests.get(get_file_url, timeout=10)
 
         if response.ok:
             return Image.open(BytesIO(response.content))
