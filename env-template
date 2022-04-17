@@ -3,6 +3,11 @@
 
 HARDCODED_USER=
 HARDCODED_PASSWORD=
-PICTURES_TABLE_NAME=pictures
+
 
 TELEGRAM_BOT_TOKEN=
+
+### Will be dynamically renamed ###
+PICTURES_TABLE_NAME=pictures
+CHECK_MEME_QUEUE_URL=
+###################################

@@ -27,6 +27,7 @@ plugins:
   - serverless-dotenv-plugin
   - serverless-offline
   - serverless-python-requirements
+  - serverless-lift
 
 provider:
   name: aws
@@ -50,17 +51,18 @@ provider:
 
 functions:
   check-meme:
-    handler: handler.check_duplicate_meme_handler
-    timeout: 25
+    handler: handler.check_telegram_webhook_handler
+    timeout: 3
     environment:
       HARDCODED_USER: ${env:HARDCODED_USER}
       HARDCODED_PASSWORD: ${env:HARDCODED_PASSWORD}
+      CHECK_MEME_QUEUE_URL: ${construct:check-meme-queue.queueUrl}
+    layers:
+      - arn:aws:lambda:eu-central-1:770693421928:layer:Klayers-python38-Pillow:15
     events:
       - http:
           path: check-meme
           method: post
-    layers:
-      - arn:aws:lambda:eu-central-1:770693421928:layer:Klayers-python38-Pillow:14
 
 
 resources: # CloudFormation template syntax from here on.
@@ -76,6 +78,15 @@ resources: # CloudFormation template syntax from here on.
           - AttributeName: stripped_url
             KeyType: HASH
         BillingMode: PAY_PER_REQUEST
+
+constructs:
+  check-meme-queue:
+    type: queue
+    worker:
+      handler: handler.check_duplicate_meme_handler
+      timeout: 200
+      layers:
+        - arn:aws:lambda:eu-central-1:770693421928:layer:Klayers-python38-Pillow:15
 
 custom:
   pythonRequirements:
